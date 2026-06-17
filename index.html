@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>SEK安保指挥系统</title>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
             --bg-color: #141d26;
@@ -21,7 +21,6 @@
             background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 0;
             padding-bottom: 65px; padding-top: 50px; overflow-x: hidden;
         }
-        /* 顶部原生状态栏模拟 */
         .app-header {
             position: fixed; top: 0; left: 0; right: 0; height: 50px; background: var(--card-bg);
             display: flex; align-items: center; justify-content: center; z-index: 100;
@@ -29,24 +28,20 @@
         }
         .app-header h1 { font-size: 18px; margin: 0; font-weight: 600; letter-spacing: 1px; }
         
-        /* 页面容器 */
         .app-page { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
         .app-page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* KPI 卡片 */
         .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
         .kpi-card { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid #2f3336; }
         .kpi-title { font-size: 13px; color: var(--text-sub); display: flex; align-items: center; gap: 5px; }
         .kpi-val { font-size: 28px; font-weight: bold; margin: 8px 0 4px 0; }
         .kpi-desc { font-size: 11px; color: var(--text-sub); line-height: 1.4; }
 
-        /* 图表与列表卡片 */
         .chart-card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #2f3336; }
         .card-title { font-size: 15px; font-weight: bold; margin-bottom: 15px; border-left: 4px solid var(--accent); padding-left: 8px; }
         .mobile-chart { width: 100%; height: 280px; }
 
-        /* 原生表格移动端优化 */
         .list-table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 12px; overflow: hidden; }
         .list-table th, .list-table td { padding: 12px 10px; text-align: left; font-size: 13px; border-bottom: 1px solid #2f3336; }
         .list-table th { background: #243447; color: var(--text-sub); font-weight: normal; }
@@ -54,7 +49,6 @@
         .badge-day { background: rgba(29, 161, 242, 0.2); color: var(--accent); }
         .badge-night { background: rgba(255, 173, 31, 0.2); color: var(--accent-warn); }
 
-        /* 底部原生导航栏 */
         .app-nav {
             position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: var(--card-bg);
             display: flex; border-top: 1px solid #2f3336; z-index: 100; padding-bottom: inset-bottom;
@@ -96,4 +90,7 @@
     </div>
 
     <div id="page-list" class="app-page">
-        <div class="cha
+        <div class="chart-card" style="padding: 5px; overflow-x: auto;">
+            <table class="list-table">
+                <thead>
+                    <tr>

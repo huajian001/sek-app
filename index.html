@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SEK安保指挥系统</title>
+    <title>SEK先丰安保指挥系统</title>
+    
     <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
+        /* 全局主题与变量定义 */
         :root {
             --bg-color: #141d26;
             --card-bg: #1f2d3d;
@@ -15,45 +18,65 @@
             --accent: #1da1f2;
             --accent-warn: #ffad1f;
         }
+        
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 0;
-            padding-bottom: 65px; padding-top: 50px; overflow-x: hidden;
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            margin: 0; 
+            padding: 0;
+            padding-bottom: 70px; /* 为底部导航栏留出空间 */
+            padding-top: 55px; /* 为顶部状态栏留出空间 */
+            overflow-x: hidden;
         }
+
+        /* 顶部导航状态栏 */
         .app-header {
-            position: fixed; top: 0; left: 0; right: 0; height: 50px; background: var(--card-bg);
-            display: flex; align-items: center; justify-content: center; z-index: 100;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); border-bottom: 1px solid #2f3336;
+            position: fixed; top: 0; left: 0; right: 0; height: 50px; 
+            background: var(--card-bg);
+            display: flex; align-items: center; justify-content: center; 
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); 
+            border-bottom: 1px solid #2f3336;
         }
         .app-header h1 { font-size: 18px; margin: 0; font-weight: 600; letter-spacing: 1px; }
         
+        /* 页面切换动画与布局 */
         .app-page { display: none; padding: 15px; animation: fadeIn 0.3s ease; }
         .app-page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* KPI 数据卡片 */
         .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
-        .kpi-card { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid #2f3336; }
-        .kpi-title { font-size: 13px; color: var(--text-sub); display: flex; align-items: center; gap: 5px; }
+        .kpi-card { background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid #2f3336; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .kpi-title { font-size: 13px; color: var(--text-sub); display: flex; align-items: center; gap: 6px; }
         .kpi-val { font-size: 28px; font-weight: bold; margin: 8px 0 4px 0; }
-        .kpi-desc { font-size: 11px; color: var(--text-sub); line-height: 1.4; }
+        .kpi-desc { font-size: 11px; color: var(--text-sub); line-height: 1.5; }
 
-        .chart-card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #2f3336; }
+        /* 图表容器 */
+        .chart-card { background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #2f3336; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .card-title { font-size: 15px; font-weight: bold; margin-bottom: 15px; border-left: 4px solid var(--accent); padding-left: 8px; }
         .mobile-chart { width: 100%; height: 280px; }
 
+        /* 移动端优化表格 */
         .list-table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 12px; overflow: hidden; }
         .list-table th, .list-table td { padding: 12px 10px; text-align: left; font-size: 13px; border-bottom: 1px solid #2f3336; }
         .list-table th { background: #243447; color: var(--text-sub); font-weight: normal; }
-        .badge { padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        .badge-day { background: rgba(29, 161, 242, 0.2); color: var(--accent); }
-        .badge-night { background: rgba(255, 173, 31, 0.2); color: var(--accent-warn); }
+        .list-table tbody tr:last-child td { border-bottom: none; }
+        .badge { padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; }
+        .badge-day { background: rgba(29, 161, 242, 0.15); color: var(--accent); border: 1px solid rgba(29, 161, 242, 0.3); }
+        .badge-night { background: rgba(255, 173, 31, 0.15); color: var(--accent-warn); border: 1px solid rgba(255, 173, 31, 0.3); }
 
+        /* 底部导航栏 */
         .app-nav {
-            position: fixed; bottom: 0; left: 0; right: 0; height: 60px; background: var(--card-bg);
-            display: flex; border-top: 1px solid #2f3336; z-index: 100; padding-bottom: inset-bottom;
+            position: fixed; bottom: 0; left: 0; right: 0; height: 60px; 
+            background: var(--card-bg);
+            display: flex; border-top: 1px solid #2f3336; z-index: 100; 
+            padding-bottom: env(safe-area-inset-bottom); /* 适配苹果全面屏底部小黑条 */
         }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-sub); font-size: 11px; text-decoration: none; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-sub); font-size: 11px; text-decoration: none; transition: color 0.2s; }
         .nav-item i { font-size: 20px; margin-bottom: 4px; }
         .nav-item.active { color: var(--accent); }
     </style>
@@ -61,19 +84,20 @@
 <body>
 
     <div class="app-header">
-        <h1><i class="fa-solid fa-shield-halved" style="color:#1da1f2;"></i> SEK先丰安保系统</h1>
+        <h1><i class="fa-solid fa-shield-halved" style="color:var(--accent);"></i> SEK安保指挥系统</h1>
     </div>
 
     <div id="page-dash" class="app-page active">
+        
         <div class="kpi-grid">
             <div class="kpi-card">
-                <div class="kpi-title"><i class="fa-regular fa-sun" style="color:#1da1f2;"></i> 白班总数</div>
-                <div class="kpi-val" style="color:#1da1f2;">52</div>
-                <div class="kpi-desc">特勤: 2人 | 司机: 2人</div>
+                <div class="kpi-title"><i class="fa-regular fa-sun" style="color:var(--accent);"></i> 白班总数</div>
+                <div class="kpi-val" style="color:var(--accent);">52 <span style="font-size:14px;">人</span></div>
+                <div class="kpi-desc">特勤: 2人<br>司机: 2人</div>
             </div>
             <div class="kpi-card">
-                <div class="kpi-title"><i class="fa-regular fa-moon" style="color:#ffad1f;"></i> 夜班总数</div>
-                <div class="kpi-val" style="color:#ffad1f;">69</div>
+                <div class="kpi-title"><i class="fa-regular fa-moon" style="color:var(--accent-warn);"></i> 夜班总数</div>
+                <div class="kpi-val" style="color:var(--accent-warn);">69 <span style="font-size:14px;">人</span></div>
                 <div class="kpi-desc">特勤:7人 | 警察:20人<br>武装:10枪 | 司机:2人</div>
             </div>
         </div>
@@ -87,10 +111,133 @@
             <div class="card-title">全区安保力量分布占比</div>
             <div id="pieChart" class="mobile-chart"></div>
         </div>
+        
     </div>
 
     <div id="page-list" class="app-page">
-        <div class="chart-card" style="padding: 5px; overflow-x: auto;">
+        <div class="chart-card" style="padding: 0; border: none; overflow-x: auto;">
             <table class="list-table">
                 <thead>
                     <tr>
+                        <th>核心区域</th>
+                        <th>主要岗位类型</th>
+                        <th style="text-align:center;"><span class="badge badge-day">白班</span></th>
+                        <th style="text-align:center;"><span class="badge badge-night">夜班</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><b>第1区</b><br><span style="font-size:11px;color:#8899a6;">门岗营地</span></td><td>厂区大门/各营地/<br>水源地岗亭</td><td style="text-align:center;color:#1da1f2;">9</td><td style="text-align:center;color:#ffad1f;">10</td></tr>
+                    <tr><td><b>第2区</b><br><span style="font-size:11px;color:#8899a6;">尾矿库</span></td><td>1-5号尾矿库<br>(TSF系列)</td><td style="text-align:center;color:#1da1f2;">12</td><td style="text-align:center;color:#ffad1f;">15</td></tr>
+                    <tr><td><b>第3区</b><br><span style="font-size:11px;color:#8899a6;">矿坑外围</span></td><td>八公里矿坑/排土场/<br>中心矿变电站</td><td style="text-align:center;color:#1da1f2;">8</td><td style="text-align:center;color:#ffad1f;">12</td></tr>
+                    <tr><td><b>第4区</b><br><span style="font-size:11px;color:#8899a6;">车间仓库</span></td><td>电积/萃取/浮选车间/<br>综合仓库/加油站</td><td style="text-align:center;color:#1da1f2;">10</td><td style="text-align:center;color:#ffad1f;">16</td></tr>
+                    <tr><td><b>第5区</b><br><span style="font-size:11px;color:#8899a6;">堆浸排土</span></td><td>堆浸区/2、5、8号<br>堆矿场</td><td style="text-align:center;color:#1da1f2;">7</td><td style="text-align:center;color:#ffad1f;">8</td></tr>
+                    <tr><td><b>第6区</b><br><span style="font-size:11px;color:#8899a6;">水电其他</span></td><td>清水池/发电厂/<br>净水厂/岩芯库</td><td style="text-align:center;color:#1da1f2;">6</td><td style="text-align:center;color:#ffad1f;">8</td></tr>
+                    <tr style="background:#243447;"><td><b>合计</b></td><td></td><td style="text-align:center;font-weight:bold;color:#1da1f2;">52</td><td style="text-align:center;font-weight:bold;color:#ffad1f;">69</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="app-nav">
+        <div class="nav-item active" onclick="switchTab('dash', this)">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>数据看板</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('list', this)">
+            <i class="fa-solid fa-list-check"></i>
+            <span>岗位详表</span>
+        </div>
+    </div>
+
+    <script>
+        // 声明全局图表变量
+        var barChart, pieChart;
+
+        // 强行等待手机页面和网络加载完毕后，再渲染图表（防空白核心机制）
+        window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(initCharts, 100); // 增加100毫秒微小延迟，确保容器宽度已正确计算
+        });
+
+        function initCharts() {
+            // 初始化柱状图
+            var barDom = document.getElementById('barChart');
+            if(barDom) {
+                barChart = echarts.init(barDom, 'dark');
+                barChart.setOption({
+                    backgroundColor: 'transparent',
+                    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                    legend: { data: ['白班', '夜班'], bottom: 0, itemWidth: 12, itemHeight: 12, textStyle: {color: '#8899a6', fontSize: 12} },
+                    grid: { left: '2%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
+                    xAxis: { 
+                        type: 'category', 
+                        data: ['门岗', '尾矿', '矿坑', '车间', '堆浸', '水电'], 
+                        axisLabel: { color: '#8899a6', interval: 0, fontSize: 11 } 
+                    },
+                    yAxis: { 
+                        type: 'value', 
+                        splitLine: { lineStyle: { color: '#2f3336', type: 'dashed' } }, 
+                        axisLabel: { color: '#8899a6' } 
+                    },
+                    series: [
+                        { name: '白班', type: 'bar', barGap: '10%', data: [9, 12, 8, 10, 7, 6], itemStyle: { color: '#1da1f2', borderRadius: [4, 4, 0, 0] }, label: { show: true, position: 'top', color: '#1da1f2', fontSize: 10 } },
+                        { name: '夜班', type: 'bar', data: [10, 15, 12, 16, 8, 8], itemStyle: { color: '#ffad1f', borderRadius: [4, 4, 0, 0] }, label: { show: true, position: 'top', color: '#ffad1f', fontSize: 10 } }
+                    ]
+                });
+            }
+
+            // 初始化饼图
+            var pieDom = document.getElementById('pieChart');
+            if(pieDom) {
+                pieChart = echarts.init(pieDom, 'dark');
+                pieChart.setOption({
+                    backgroundColor: 'transparent',
+                    tooltip: { trigger: 'item', formatter: '{b}: {c}人 ({d}%)' },
+                    series: [{
+                        name: '人力投入', 
+                        type: 'pie', 
+                        radius: ['45%', '70%'],
+                        center: ['50%', '45%'],
+                        avoidLabelOverlap: true,
+                        itemStyle: { borderRadius: 8, borderColor: '#1f2d3d', borderWidth: 2 },
+                        label: { show: true, position: 'outside', formatter: '{b}\n{c}人', fontSize: 11, color: '#8899a6', lineHeight: 14 },
+                        labelLine: { show: true, length: 10, length2: 15, lineStyle: { color: '#4a5b6d' } },
+                        data: [
+                            { value: 19, name: '门岗营地', itemStyle: {color: '#1da1f2'} }, 
+                            { value: 27, name: '尾矿库', itemStyle: {color: '#17bf63'} },
+                            { value: 20, name: '矿坑外围', itemStyle: {color: '#f45d22'} }, 
+                            { value: 26, name: '车间仓库', itemStyle: {color: '#794bc4'} },
+                            { value: 15, name: '堆浸排土', itemStyle: {color: '#ffad1f'} }, 
+                            { value: 14, name: '水电其他', itemStyle: {color: '#e0245e'} }
+                        ]
+                    }]
+                });
+            }
+        }
+
+        // 底部导航栏切换逻辑
+        function switchTab(pageId, el) {
+            // 隐藏所有页面并取消高亮
+            document.querySelectorAll('.app-page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            // 显示选中页面并添加高亮
+            document.getElementById('page-' + pageId).classList.add('active');
+            el.classList.add('active');
+            
+            // 重要：如果在数据看板页，需重置图表大小，防止因 display:none 导致图表被压扁
+            if(pageId === 'dash' && barChart && pieChart) {
+                setTimeout(function() {
+                    barChart.resize();
+                    pieChart.resize();
+                }, 50);
+            }
+        }
+
+        // 监听手机屏幕旋转，自动调整图表尺寸
+        window.addEventListener('resize', function() { 
+            if(barChart) barChart.resize(); 
+            if(pieChart) pieChart.resize(); 
+        });
+    </script>
+</body>
+</html>
